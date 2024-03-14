@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid()) @map("_id")
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model User {
+  id            String    @id @default(uuid()) @map("_id")
+  name          String?
+  password      String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  courses       Course[]
+}
+
+model Course {
+  id       String    @id @map("_id")
+  title    String
+  headings Heading[]
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+}
+
+model Heading {
+  id          String       @id @map("_id")
+  title       String
+  subHeadings SubHeading[]
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id])
+}
+
+model SubHeading {
+  id        String  @id @map("_id")
+  title     String
+  summary   String
+  videoLink String
+  headingId String
+  heading   Heading @relation(fields: [headingId], references: [id])
+}
